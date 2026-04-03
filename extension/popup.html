@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PhishGuard</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    width: 320px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 13px;
+    background: #0f1216;
+    color: #c8d6e5;
+  }
+  header {
+    background: #141820;
+    border-bottom: 1px solid #1e2530;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .logo { display: flex; align-items: center; gap: 8px; }
+  .logo-icon {
+    width: 28px; height: 28px;
+    background: rgba(245,166,35,0.15);
+    border: 1px solid rgba(245,166,35,0.4);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; border-radius: 4px;
+  }
+  .logo-text { font-weight: 600; font-size: 14px; color: #fff; letter-spacing: 1px; }
+  .logo-sub  { font-size: 9px; color: #f5a623; letter-spacing: 2px; }
+
+  .toggle-wrap {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 11px; color: #4a5568;
+  }
+  .toggle {
+    position: relative; width: 36px; height: 20px;
+    background: #1e2530; border-radius: 10px; cursor: pointer;
+    transition: background 0.2s;
+  }
+  .toggle.on { background: #f5a623; }
+  .toggle-knob {
+    position: absolute; top: 3px; left: 3px;
+    width: 14px; height: 14px; background: #fff;
+    border-radius: 50%; transition: transform 0.2s;
+  }
+  .toggle.on .toggle-knob { transform: translateX(16px); }
+
+  .stats-row {
+    display: flex; border-bottom: 1px solid #1e2530;
+  }
+  .stat-cell {
+    flex: 1; text-align: center; padding: 10px 4px;
+    border-right: 1px solid #1e2530;
+  }
+  .stat-cell:last-child { border-right: none; }
+  .stat-val { font-size: 18px; font-weight: 600; font-family: monospace; color: #f5a623; }
+  .stat-lbl { font-size: 9px; letter-spacing: 1px; color: #4a5568; text-transform: uppercase; margin-top: 1px; }
+
+  .section-title {
+    font-size: 9px; letter-spacing: 2px; color: #4a5568;
+    text-transform: uppercase; padding: 10px 16px 6px;
+    border-bottom: 1px solid #1e2530;
+  }
+
+  .feed { max-height: 200px; overflow-y: auto; }
+  .feed::-webkit-scrollbar { width: 3px; }
+  .feed::-webkit-scrollbar-thumb { background: #1e2530; }
+
+  .feed-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 16px; border-bottom: 1px solid #0f1216;
+    cursor: default;
+  }
+  .feed-item:hover { background: #141820; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .dot-threat     { background: #E24B4A; }
+  .dot-suspicious { background: #EF9F27; }
+  .dot-safe       { background: #1D9E75; }
+  .dot-error      { background: #888; }
+  .feed-text { flex: 1; font-size: 11px; color: #8899aa; overflow: hidden;
+               text-overflow: ellipsis; white-space: nowrap; }
+  .feed-score { font-family: monospace; font-size: 11px; color: #f5a623; flex-shrink: 0; }
+
+  .empty { padding: 20px 16px; text-align: center; color: #4a5568; font-size: 11px; }
+
+  footer {
+    padding: 10px 16px;
+    border-top: 1px solid #1e2530;
+    display: flex; gap: 8px;
+  }
+  .btn {
+    flex: 1; padding: 7px; background: #141820; border: 1px solid #1e2530;
+    color: #8899aa; font-size: 11px; cursor: pointer; border-radius: 4px;
+    transition: all 0.15s; text-align: center;
+  }
+  .btn:hover { border-color: #f5a623; color: #f5a623; }
+  .btn-primary { background: rgba(245,166,35,0.1); border-color: rgba(245,166,35,0.4); color: #f5a623; }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <div class="logo-icon">🛡</div>
+    <div>
+      <div class="logo-text">PHISHGUARD</div>
+      <div class="logo-sub">ACTIVE PROTECTION</div>
+    </div>
+  </div>
+  <div class="toggle-wrap">
+    <span id="toggle-label">ON</span>
+    <div class="toggle on" id="toggle">
+      <div class="toggle-knob"></div>
+    </div>
+  </div>
+</header>
+
+<div class="stats-row">
+  <div class="stat-cell">
+    <div class="stat-val" id="stat-total">0</div>
+    <div class="stat-lbl">Scanned</div>
+  </div>
+  <div class="stat-cell">
+    <div class="stat-val" id="stat-threats" style="color:#E24B4A">0</div>
+    <div class="stat-lbl">Threats</div>
+  </div>
+  <div class="stat-cell">
+    <div class="stat-val" id="stat-suspicious" style="color:#EF9F27">0</div>
+    <div class="stat-lbl">Suspicious</div>
+  </div>
+</div>
+
+<div class="section-title">Live scan feed</div>
+<div class="feed" id="feed">
+  <div class="empty">No scans yet — open an email to start.</div>
+</div>
+
+<footer>
+  <button class="btn btn-primary" id="open-dashboard">Open Dashboard</button>
+  <button class="btn" id="clear-badge">Clear Badge</button>
+</footer>
+
+<script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PhishGuard — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="nav-logo">
+      <div class="nav-logo-icon">🛡</div>
+      <div>
+        <div class="nav-logo-title">PHISHGUARD</div>
+        <div class="nav-logo-sub">AI THREAT DETECTION</div>
+      </div>
+    </div>
+    <div class="nav-links">
+      <button class="nav-btn active" data-tab="scan">
+        <span class="nav-icon">⚡</span> Scan
+      </button>
+      <button class="nav-btn" data-tab="stats">
+        <span class="nav-icon">📊</span> Statistics
+      </button>
+      <button class="nav-btn" data-tab="campaigns">
+        <span class="nav-icon">🔗</span> Campaigns
+      </button>
+    </div>
+    <div class="nav-live">
+      <div class="live-dot"></div>
+      <span id="live-status">Connecting…</span>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <main class="main">
+
+    <!-- SCAN TAB -->
+    <div class="tab active" id="tab-scan">
+      <div class="page-header">
+        <h1>Analyze Threat</h1>
+        <p class="page-sub">Paste email content, a URL, or upload an attachment</p>
+      </div>
+
+      <div class="input-panel">
+        <div class="mode-tabs">
+          <button class="mode-tab active" data-mode="email">📧 Email</button>
+          <button class="mode-tab" data-mode="url">🔗 URL</button>
+          <button class="mode-tab" data-mode="attachment">📎 Attachment</button>
+        </div>
+
+        <div id="mode-email">
+          <textarea id="email-input" placeholder="Paste email content here — subject, body, any links…
+
+Example:
+Subject: Urgent: Your PayPal account has been limited
+From: security@paypa1-alert.com
+
+Dear Customer, click here to verify: http://paypa1-secure.net/login"></textarea>
+          <div class="example-chips">
+            <span class="chip-label">Try:</span>
+            <button class="chip phish" data-example="phish_email">⚠ Phishing email</button>
+            <button class="chip phish" data-example="phish_bank">⚠ Bank scam</button>
+            <button class="chip safe" data-example="safe_email">✓ Legit email</button>
+          </div>
+        </div>
+
+        <div id="mode-url" style="display:none">
+          <input type="text" id="url-input" placeholder="Enter URL: https://suspicious-site.com/login">
+          <div class="example-chips">
+            <span class="chip-label">Try:</span>
+            <button class="chip phish" data-example="phish_url">⚠ Lookalike URL</button>
+            <button class="chip phish" data-example="ip_url">⚠ IP redirect</button>
+            <button class="chip safe" data-example="safe_url">✓ Legit URL</button>
+          </div>
+        </div>
+
+        <div id="mode-attachment" style="display:none">
+          <div class="drop-zone" id="drop-zone">
+            <div class="drop-icon">📎</div>
+            <div class="drop-text">Drop file here or <label for="file-input" class="drop-link">browse</label></div>
+            <div class="drop-sub">PDF, DOCX, EXE — static analysis + optional sandbox</div>
+            <input type="file" id="file-input" style="display:none" accept=".pdf,.doc,.docx,.exe,.zip">
+          </div>
+          <div id="file-selected" style="display:none" class="file-selected-box"></div>
+        </div>
+
+        <button class="analyze-btn" id="analyze-btn">⚡ ANALYZE THREAT</button>
+        <div class="progress-bar" id="progress-bar"><div class="progress-fill"></div></div>
+        <div class="scanning-text" id="scanning-text">AI engine processing — analyzing 12 signals…</div>
+      </div>
+
+      <!-- Result -->
+      <div class="result-panel" id="result-panel" style="display:none">
+        <div class="result-header">
+          <div class="score-ring-wrap">
+            <canvas id="score-ring" width="100" height="100"></canvas>
+            <div class="score-center">
+              <span class="score-num" id="score-num">0</span>
+              <span class="score-lbl">RISK</span>
+            </div>
+          </div>
+          <div class="verdict-block">
+            <div class="verdict-badge" id="verdict-badge">●  ANALYZING</div>
+            <div class="verdict-summary" id="verdict-summary"></div>
+            <div class="ai-gen-badge" id="ai-gen-badge" style="display:none">
+              🤖 AI-generated content detected
+            </div>
+          </div>
+        </div>
+
+        <div class="signals-section">
+          <div class="section-label">Detection signals</div>
+          <div class="signals-grid" id="signals-grid"></div>
+        </div>
+
+        <div class="explain-section">
+          <div class="section-label">AI reasoning</div>
+          <div class="explain-box" id="explain-box"></div>
+        </div>
+
+        <div class="attack-chain-section" id="attack-chain-section" style="display:none">
+          <div class="section-label">Attack chain</div>
+          <div class="chain-wrap" id="chain-wrap"></div>
+        </div>
+
+        <div class="feedback-row">
+          <span class="feedback-label">Was this wrong?</span>
+          <button class="feedback-btn" id="fp-btn">Not phishing</button>
+          <button class="feedback-btn" id="fn-btn">Missed a threat</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STATS TAB -->
+    <div class="tab" id="tab-stats">
+      <div class="page-header">
+        <h1>Statistics</h1>
+        <p class="page-sub">Detection history and threat analytics</p>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-big" id="s-total">—</div>
+          <div class="stat-name">Total scanned</div>
+        </div>
+        <div class="stat-card danger">
+          <div class="stat-big" id="s-threats">—</div>
+          <div class="stat-name">Threats detected</div>
+        </div>
+        <div class="stat-card warn">
+          <div class="stat-big" id="s-suspicious">—</div>
+          <div class="stat-name">Suspicious</div>
+        </div>
+        <div class="stat-card safe">
+          <div class="stat-big" id="s-rate">—</div>
+          <div class="stat-name">Detection rate</div>
+        </div>
+      </div>
+      <div class="chart-row">
+        <div class="chart-card">
+          <div class="chart-title">Daily threat trend</div>
+          <canvas id="trend-chart" height="120"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Top threat categories</div>
+          <canvas id="category-chart" height="120"></canvas>
+        </div>
+      </div>
+      <div class="recent-panel">
+        <div class="section-label">Recent scans</div>
+        <div id="recent-list"></div>
+      </div>
+    </div>
+
+    <!-- CAMPAIGNS TAB -->
+    <div class="tab" id="tab-campaigns">
+      <div class="page-header">
+        <h1>Campaign Tracker</h1>
+        <p class="page-sub">Clustered phishing campaigns detected across scans</p>
+      </div>
+      <div id="campaigns-list">
+        <div class="empty-state">No campaigns detected yet. Scan more emails to begin clustering.</div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="components/ScanPanel.js"></script>
+<script src="components/ResultCard.js"></script>
+<script src="components/StatsPanel.js"></script>
+<script src="components/LiveFeed.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
