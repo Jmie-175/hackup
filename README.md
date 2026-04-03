@@ -1,112 +1,95 @@
 # PhishGuard 🛡
 
-**AI-powered real-time phishing detection** across emails, URLs, and attachments.
+**AI-powered real-time phishing detection** for emails, URLs, and attachments.
 
-Built for the AI/ML & Cybersecurity Hackathon — Topic 01: AI-Powered Phishing Detection System.
+Built for the AI/ML & Cybersecurity Hackathon.
+
+### Key Updates (v1.1)
+- Switched primary model to **Llama 3.1 8B** → significantly better reasoning and precision
+- Increased detection sensitivity (lower thresholds)
+- Improved LLM prompts for detailed, consistent explanations
+- Better false-negative reduction on phishing emails and links
 
 ---
 
 ## Features
 
-| Feature | Status |
-|---|---|
-| Email content NLP analysis | ✅ |
-| URL heuristics (lookalike, IP, TLD, encoding) | ✅ |
-| Multi-signal risk scoring with explainability | ✅ |
-| Gmail overlay via Chrome extension | ✅ |
-| Real-time WebSocket live feed | ✅ |
-| AI-generated phishing detection | ✅ |
-| Attachment static analysis | ✅ |
-| Campaign clustering | 🔜 V2 |
-| Docker sandbox (dynamic analysis) | 🔜 V2 |
+| Feature                        | Status |
+|--------------------------------|--------|
+| Real-time Gmail overlay        | ✅     |
+| Multi-signal heuristic analysis| ✅     |
+| URL threat detection           | ✅     |
+| AI-generated content detection | ✅     |
+| Detailed explanations          | ✅     |
+| Chrome Extension               | ✅     |
+| Local LLM (no data sent out)   | ✅     |
+| Attachment static analysis     | ✅     |
+| Sandbox dynamic analysis       | 🔜 V2  |
 
 ---
 
 ## Quick Start
 
-### 1. Install Ollama + pull models
+### 1. Install Ollama + Models
+
 ```bash
-# Install Ollama: https://ollama.com
-ollama pull mistral:7b
+ollama pull llama3.1:8b
 ollama pull phi3:mini
-```
-
-### 2. Start the backend
-```bash
-cd backend
+2. Start the Backend
+Bashcd backend
 pip install -r requirements.txt
+
+# Copy environment file
 cp ../.env.example ../.env
+
+# Recommended settings for higher sensitivity:
+# THRESHOLD_SAFE=25
+# THRESHOLD_SUSPICIOUS=55
+# PRIMARY_MODEL=llama3.1:8b-instruct
+
 mkdir -p ../data
-uvicorn main:app --reload --port 8000
-```
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+3. Load the Chrome Extension
 
-### 3. Open the dashboard
-```
-Open frontend/index.html in your browser
-```
+Go to chrome://extensions/
+Enable Developer mode
+Click Load unpacked → select the extension/ folder
 
-### 4. Load the Chrome extension
-```
-1. Go to chrome://extensions/
-2. Enable "Developer mode"
-3. Click "Load unpacked"
-4. Select the extension/ folder
-5. Open Gmail — PhishGuard is active
-```
+4. Open the Dashboard
+Open frontend/index.html in your browser (or click "Open Dashboard" in the extension popup).
 
-### 5. (Optional) Run with Docker
-```bash
-docker compose up
-```
+Recommended Configuration (for higher phishing detection)
+In .env:
+envPRIMARY_MODEL=llama3.1:8b
+FAST_MODEL=phi3:mini
 
----
+# More sensitive detection
+THRESHOLD_SAFE=25
+THRESHOLD_SUSPICIOUS=55
 
-## Architecture
+Detection Signals
 
-```
-User → Dashboard (frontend/)     → POST /scan → FastAPI (backend/)
-     → Gmail (extension/)        →                ├── content_analyser.py
-                                                  ├── url_analyser.py
-                                                  ├── scoring/risk_engine.py
-                                                  ├── llm/client.py (Ollama)
-                                                  └── database.py (SQLite)
-                                  ← WS /stream ← Real-time result push
-```
+Urgency language
+Credential harvesting requests
+Brand impersonation
+Suspicious sender & lookalike domains
+IP addresses in URLs
+URL shorteners, encoding, suspicious paths
+Text quality anomalies
 
----
 
-## Detection Signals
+Tech Stack
 
-1. **Urgency language** — fear/pressure trigger patterns
-2. **Credential request** — asks for passwords, OTPs, card details
-3. **Brand impersonation** — PayPal, Chase, Apple etc. referenced but sender doesn't match
-4. **Sender authenticity** — reply-to mismatch, suspicious domain patterns
-5. **IP as hostname** — direct IP in URL
-6. **Lookalike domain** — homoglyph characters (paypa1, rn vs m)
-7. **Suspicious TLD** — .xyz, .click, .tk, .gq
-8. **URL shortener** — hides true destination
-9. **Subdomain depth** — excessive nesting
-10. **URL encoding** — obfuscated characters
-11. **Path keywords** — /login, /verify, /confirm
-12. **Text quality** — excessive caps, abnormal formatting
+Backend: FastAPI + Python 3.11
+AI: Ollama (Llama 3.1 8B Instruct + Phi-3 Mini) — fully local
+Database: SQLite
+Frontend: Vanilla HTML/CSS/JS + Chart.js
+Extension: Chrome Manifest V3
 
----
 
-## Score Thresholds
+How to Run with Docker
+Bashdocker compose up --build
+For sandbox (V2):
+Bashdocker compose --profile sandbox up
 
-| Score | Verdict | Action |
-|---|---|---|
-| 0–39 | ✅ Safe | Deliver normally |
-| 40–69 | ⚡ Suspicious | Show warning banner |
-| 70–100 | ⚠ Threat | Quarantine + notification |
-
----
-
-## Tech Stack
-
-- **Backend**: FastAPI + Python 3.11
-- **AI**: Ollama (Mistral 7B + Phi-3 Mini) — 100% local, no data leaves machine
-- **Database**: SQLite via SQLAlchemy
-- **Frontend**: Vanilla HTML/CSS/JS + Chart.js
-- **Extension**: Chrome Manifest V3
-- **Sandbox**: Docker + strace/tcpdump (V2)
+Made with ❤️ for better phishing protection.

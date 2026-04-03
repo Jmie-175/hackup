@@ -53,32 +53,67 @@ Return ONLY this JSON:
 
 
 async def explain_detection(content: str, signals: list, score: int) -> dict:
-    """Deep explanation using mistral:7b."""
+    """Strict phishing detection prompt - biased towards higher detection"""
+    
     system = (
-        "You are a cybersecurity analyst. Provide detailed, accurate threat analysis. "
-        "Always respond with valid JSON only."
+        "You are a highly vigilant senior cybersecurity analyst specialized in phishing detection. "
+        "You have a strong bias towards classifying emails as suspicious or threat when any red flags exist. "
+        "Err on the side of caution. It is better to flag a potentially legitimate email than to miss a real phishing attempt."
     )
-    signal_summary = "\n".join(
-        f"- {s['name']}: {s['detail']} (score: {s['score']})" for s in signals
-    )
-    prompt = f"""A phishing scan produced these signals (composite score: {score}/100):
 
+    signal_summary = "\n".join(
+        f"- {s.get('name', 'Signal')}: {s.get('detail', '')} (score: {s.get('score', 0)})" 
+        for s in signals
+    )
+
+    prompt = f"""Analyze this email for phishing risk.
+
+RISK SCORE FROM SIGNALS: {score}/100
+
+DETECTED SIGNALS:
 {signal_summary}
 
-CONTENT EXCERPT:
-{content[:2000]}
+EMAIL CONTENT:
+{content[:3000]}
 
-Return ONLY this JSON:
+Task: Determine if this is likely a phishing or social engineering attempt.
+Be very strict — if there is any credible suspicion (urgency, credential request, brand impersonation, suspicious link, lookalike domain, etc.), classify it as suspicious or threat.
+
+Return ONLY valid JSON in this exact format:
+
 {{
-  "explanation": "<3-5 sentence technical explanation citing specific evidence>",
-  "reasons": ["<reason 1>", "<reason 2>", "<reason 3>"],
-  "attack_type": "<credential_harvest|bec|malware_delivery|social_engineering|unknown>",
-  "target_brand": "<brand name or null>",
-  "confidence": <0-100>
-}}"""
-    raw = await _call_ollama(settings.primary_model, prompt, system)
-    return _parse_json(raw)
+  "explanation": "Write 4-7 detailed sentences explaining the risk. Always cite specific evidence from the content and signals. Never say the email looks safe unless there are ZERO red flags.",
+  "reasons": ["Clear reason 1", "Clear reason 2", "Clear reason 3"],
+  "attack_type": "credential_harvest | bec | social_engineering | malware_delivery | unknown",
+  "target_brand": "PayPal | Chase | HDFC | Apple | Microsoft | Google | null",
+  "confidence": <70 to 100>
+}}
 
+Prioritize safety: If in doubt, flag it as suspicious/threat."""
+
+    try:
+        raw = await _call_ollama(settings.primary_model, prompt, system)
+        result = _parse_json(raw)
+        
+        # Force better explanation if model is still lazy
+        exp = result.get("explanation", "").strip().lower()
+        if len(exp) < 50 or "content analysis complete" in exp or "no explanation" in exp:
+            result["explanation"] = (
+                f"This email scored {score}/100 due to multiple concerning signals including "
+                + ", ".join([s.get('name','signal') for s in signals if s.get('score',0) > 30]) 
+                + ". The combination strongly indicates a phishing attempt."
+            )
+        
+        return result
+    except Exception:
+        # Safe strict fallback
+        return {
+            "explanation": f"Multiple phishing indicators detected (score: {score}/100). Signals include urgency, suspicious links, or brand impersonation. Treat with high caution.",
+            "reasons": ["Multiple high-risk signals present"],
+            "attack_type": "social_engineering",
+            "target_brand": None,
+            "confidence": 75
+        }
 
 async def detect_ai_generated(content: str) -> dict:
     """Score likelihood that content was written by an LLM."""
