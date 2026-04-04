@@ -1,5 +1,5 @@
 #!/bin/bash
-# PhishGuard sandbox runner — executed inside Docker container
+# CyberShield sandbox runner — executed inside Docker container
 # Usage: bash /runner.sh <filename>
 
 FILE="/samples/$1"

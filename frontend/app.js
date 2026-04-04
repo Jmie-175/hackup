@@ -1,4 +1,4 @@
-// PhishGuard app.js — main application controller
+// CyberShield app.js — main application controller
 
 const API = "http://localhost:8000";
 let currentScanId = null;
@@ -31,11 +31,11 @@ document.querySelectorAll(".mode-tab").forEach((btn) => {
 // ── Example chips ────────────────────────────────────────────
 const EXAMPLES = {
   phish_email: `Subject: URGENT: Your PayPal account has been LIMITED\nFrom: security@paypa1-alert.net\n\nDear Valued Customer,\n\nWe detected unusual activity on your account. You MUST verify within 24 hours or your account will be permanently closed.\n\nClick here to verify: http://paypa1-secure-verification.com/login?ref=urgent`,
-  phish_bank:  `Subject: Your Chase Account Will Be Closed\nFrom: alerts@chase-secure-bank.xyz\n\nIMPORTANT: Suspicious login detected from Russia. Verify your account immediately at http://192.168.1.254/chase/verify.php or lose access permanently.`,
-  safe_email:  `Subject: Team standup notes — Thursday\nFrom: sarah@ourcompany.com\n\nHi team, quick recap from today's standup. We're on track for the Q2 deadline. Next sync is Monday at 10am. Deck is on Google Drive as usual.`,
-  phish_url:   "http://app1e-id-verify.com/account/login?redirect=https://apple.com",
-  ip_url:      "http://192.168.0.1:8080/paypal/login.php?session=abc123",
-  safe_url:    "https://github.com/anthropics/anthropic-sdk-python",
+  phish_bank: `Subject: Your Chase Account Will Be Closed\nFrom: alerts@chase-secure-bank.xyz\n\nIMPORTANT: Suspicious login detected from Russia. Verify your account immediately at http://192.168.1.254/chase/verify.php or lose access permanently.`,
+  safe_email: `Subject: Team standup notes — Thursday\nFrom: sarah@ourcompany.com\n\nHi team, quick recap from today's standup. We're on track for the Q2 deadline. Next sync is Monday at 10am. Deck is on Google Drive as usual.`,
+  phish_url: "http://app1e-id-verify.com/account/login?redirect=https://apple.com",
+  ip_url: "http://192.168.0.1:8080/paypal/login.php?session=abc123",
+  safe_url: "https://github.com/anthropics/anthropic-sdk-python",
 };
 
 document.querySelectorAll(".chip[data-example]").forEach((chip) => {
@@ -183,10 +183,10 @@ function renderResult(r) {
 async function loadStats() {
   try {
     const data = await fetch(`${API}/stats`).then((r) => r.json());
-    document.getElementById("s-total").textContent      = data.total_scanned;
-    document.getElementById("s-threats").textContent    = data.threats_detected;
+    document.getElementById("s-total").textContent = data.total_scanned;
+    document.getElementById("s-threats").textContent = data.threats_detected;
     document.getElementById("s-suspicious").textContent = data.suspicious_detected;
-    document.getElementById("s-rate").textContent       = data.detection_rate + "%";
+    document.getElementById("s-rate").textContent = data.detection_rate + "%";
 
     // Trend chart
     const tc = document.getElementById("trend-chart").getContext("2d");
@@ -196,7 +196,7 @@ async function loadStats() {
       data: {
         labels: data.daily_trend.map((d) => d.date.slice(5)),
         datasets: [
-          { label: "Total",   data: data.daily_trend.map((d) => d.total),   borderColor: "#4a5568", tension: 0.3, fill: false },
+          { label: "Total", data: data.daily_trend.map((d) => d.total), borderColor: "#4a5568", tension: 0.3, fill: false },
           { label: "Threats", data: data.daily_trend.map((d) => d.threats), borderColor: "#E24B4A", tension: 0.3, fill: false },
         ],
       },
@@ -227,7 +227,7 @@ async function loadStats() {
     document.getElementById("recent-list").innerHTML = data.recent_scans.map((s) => `
       <div class="recent-item">
         <div class="r-dot ${s.verdict}"></div>
-        <span class="r-time">${new Date(s.timestamp).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}</span>
+        <span class="r-time">${new Date(s.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
         <span style="flex:1;font-size:11px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
           ${s.verdict.toUpperCase()} — score ${s.score}
         </span>
@@ -245,7 +245,7 @@ async function loadCampaigns() {
     const data = await fetch(`${API}/stats`).then((r) => r.json());
     const el = document.getElementById("campaigns-list");
     el.innerHTML = '<div class="empty-state">Campaign clustering requires multiple scans. Keep scanning!</div>';
-  } catch (_) {}
+  } catch (_) { }
 }
 
 async function sendFeedback(scanId, correction) {
@@ -270,7 +270,7 @@ function connectWS() {
     try {
       const r = JSON.parse(e.data);
       LiveFeed.push(r);
-    } catch (_) {}
+    } catch (_) { }
   };
   ws.onclose = () => {
     document.querySelector(".live-dot").classList.remove("connected");

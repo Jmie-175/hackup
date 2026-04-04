@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     port: int = 8000
 
     # Make DB path absolute relative to project root
-    db_path: str = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "phishguard.db"))
+    db_path: str = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "cybershield.db"))
 
     # Score thresholds
     threshold_safe: int = 35        # below this → safe  (was 40)

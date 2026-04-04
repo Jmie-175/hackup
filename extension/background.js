@@ -1,4 +1,4 @@
-// PhishGuard background.js — service worker
+// CyberShield background.js — service worker
 const API_BASE = "http://localhost:8000";
 let ws = null;
 let scanHistory = [];
@@ -11,11 +11,11 @@ function connectWebSocket() {
         const result = JSON.parse(e.data);
         updateHistory(result);
         notifyPopup({ type: "LIVE_RESULT", result });
-      } catch (_) {}
+      } catch (_) { }
     };
     ws.onclose = () => setTimeout(connectWebSocket, 3000);
-    ws.onerror  = () => ws.close();
-  } catch (_) {}
+    ws.onerror = () => ws.close();
+  } catch (_) { }
 }
 
 connectWebSocket();
@@ -60,7 +60,7 @@ async function handleScan(payload, tabId) {
       chrome.notifications.create({
         type: "basic",
         iconUrl: "icons/icon48.png",
-        title: "PhishGuard: Phishing Detected",
+        title: "CyberShield: Phishing Detected",
         message: result.reasons[0] || "High-risk email detected.",
         priority: 2,
       });
@@ -68,7 +68,7 @@ async function handleScan(payload, tabId) {
 
     notifyPopup({ type: "LIVE_RESULT", result });
   } catch (err) {
-    console.error("[PhishGuard] Scan failed:", err);
+    console.error("[CyberShield] Scan failed:", err);
     if (tabId) {
       chrome.tabs.sendMessage(tabId, {
         type: "SCAN_RESULT",
@@ -81,7 +81,7 @@ async function handleScan(payload, tabId) {
 function setBadge(score, verdict, tabId) {
   const colors = { threat: "#E24B4A", suspicious: "#EF9F27", safe: "#1D9E75", error: "#888" };
   const color = colors[verdict] || "#888";
-  const text  = verdict === "error" ? "!" : String(score);
+  const text = verdict === "error" ? "!" : String(score);
   chrome.action.setBadgeBackgroundColor({ color, tabId });
   chrome.action.setBadgeText({ text, tabId });
 }
@@ -99,11 +99,11 @@ function updateHistory(result) {
 }
 
 function notifyPopup(msg) {
-  chrome.runtime.sendMessage(msg).catch(() => {});
+  chrome.runtime.sendMessage(msg).catch(() => { });
 }
 
 function broadcastToTabs(msg) {
   chrome.tabs.query({ url: "https://mail.google.com/*" }, (tabs) => {
-    tabs.forEach((tab) => chrome.tabs.sendMessage(tab.id, msg).catch(() => {}));
+    tabs.forEach((tab) => chrome.tabs.sendMessage(tab.id, msg).catch(() => { }));
   });
 }

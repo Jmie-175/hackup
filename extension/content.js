@@ -1,4 +1,4 @@
-// PhishGuard content.js — Gmail observer + attachment scraper
+// CyberShield content.js — Gmail observer + attachment scraper
 
 let isEnabled = true;
 let lastScannedHash = null;
@@ -140,7 +140,7 @@ function showScanningIndicator(emailBody, attachmentCount = 0) {
                 animation:pg-spin 0.8s linear infinite;"></div>
     <div style="flex:1;">
       <div style="font-weight:700;font-size:11px;letter-spacing:1px;
-                  color:#3b82f6;margin-bottom:2px;">PHISHGUARD SCANNING</div>
+                  color:#3b82f6;margin-bottom:2px;">CYBERSHIELD SCANNING</div>
       <div style="font-size:12px;color:#64748b;font-weight:500;
                   animation:pg-pulse 1.8s ease-in-out infinite;">
         Analyzing sender, URLs, content${attNote}…
@@ -169,6 +169,6 @@ function decorateLinks(result) {
   document.querySelectorAll(".a3s.aiL a").forEach((link) => {
     link.style.outline       = isHigh ? "2px solid #ef4444" : "1px solid #f59e0b";
     link.style.outlineOffset = "2px";
-    link.title = `PhishGuard: ${isHigh ? "high-risk" : "suspicious"} link (score ${result.score})`;
+    link.title = `CyberShield: ${isHigh ? "high-risk" : "suspicious"} link (score ${result.score})`;
   });
 }

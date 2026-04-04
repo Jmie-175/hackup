@@ -18,29 +18,29 @@ export function Sidebar({ currentTab, onTabChange, wsState }: SidebarProps) {
             <ShieldAlert size={28} />
           </div>
           <div>
-            <h1 className="font-bold text-lg tracking-wider text-foreground">PHISHGUARD</h1>
+            <h1 className="font-bold text-lg tracking-wider text-foreground">CYBERSHIELD</h1>
             <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-mono">AI Threat Detection</p>
           </div>
         </div>
 
         <nav className="space-y-2">
-          <NavItem 
-            icon={<Zap size={18} />} 
-            label="Scan Threat" 
-            isActive={currentTab === "scan"} 
-            onClick={() => onTabChange("scan")} 
+          <NavItem
+            icon={<Zap size={18} />}
+            label="Scan Threat"
+            isActive={currentTab === "scan"}
+            onClick={() => onTabChange("scan")}
           />
-          <NavItem 
-            icon={<BarChart2 size={18} />} 
-            label="Statistics" 
-            isActive={currentTab === "stats"} 
-            onClick={() => onTabChange("stats")} 
+          <NavItem
+            icon={<BarChart2 size={18} />}
+            label="Statistics"
+            isActive={currentTab === "stats"}
+            onClick={() => onTabChange("stats")}
           />
-          <NavItem 
-            icon={<LinkIcon size={18} />} 
-            label="Campaigns" 
-            isActive={currentTab === "campaigns"} 
-            onClick={() => onTabChange("campaigns")} 
+          <NavItem
+            icon={<LinkIcon size={18} />}
+            label="Campaigns"
+            isActive={currentTab === "campaigns"}
+            onClick={() => onTabChange("campaigns")}
           />
         </nav>
       </div>
@@ -51,14 +51,13 @@ export function Sidebar({ currentTab, onTabChange, wsState }: SidebarProps) {
             {wsState === "connected" && (
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             )}
-            <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${
-              wsState === "connected" ? "bg-emerald-500" : 
-              wsState === "connecting" ? "bg-amber-500 animate-pulse" : "bg-red-500"
-            }`}></span>
+            <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${wsState === "connected" ? "bg-emerald-500" :
+                wsState === "connecting" ? "bg-amber-500 animate-pulse" : "bg-red-500"
+              }`}></span>
           </div>
           <span className="text-muted-foreground">
-            {wsState === "connected" ? "LIVE FEED ACTIVE" : 
-             wsState === "connecting" ? "CONNECTING..." : "DISCONNECTED"}
+            {wsState === "connected" ? "LIVE FEED ACTIVE" :
+              wsState === "connecting" ? "CONNECTING..." : "DISCONNECTED"}
           </span>
         </div>
       </div>
@@ -70,12 +69,11 @@ function NavItem({ icon, label, isActive, onClick }: { icon: React.ReactNode, la
   return (
     <button
       onClick={onClick}
-      className={`relative flex items-center gap-3 w-full px-4 py-3 rounded-lg text-sm transition-all duration-200 overflow-hidden group ${
-        isActive ? "text-primary font-medium bg-primary/10" : "text-muted-foreground hover:bg-white/5 hover:text-white"
-      }`}
+      className={`relative flex items-center gap-3 w-full px-4 py-3 rounded-lg text-sm transition-all duration-200 overflow-hidden group ${isActive ? "text-primary font-medium bg-primary/10" : "text-muted-foreground hover:bg-white/5 hover:text-white"
+        }`}
     >
       {isActive && (
-        <motion.div 
+        <motion.div
           layoutId="active-tab-indicator"
           className="absolute left-0 top-0 w-1 h-full bg-primary"
           initial={false}

@@ -1,4 +1,4 @@
-# PhishGuard 🛡
+# CyberShield 🛡
 
 **AI-powered real-time phishing detection** for emails, URLs, and attachments.
 

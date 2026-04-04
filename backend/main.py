@@ -13,7 +13,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="PhishGuard API",
+    title="CyberShield API",
     description="AI-powered phishing detection backend",
     version="1.0.0",
     lifespan=lifespan,

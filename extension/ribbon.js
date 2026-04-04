@@ -1,4 +1,4 @@
-// PhishGuard ribbon.js — risk banner + 5-tab analysis drawer
+// CyberShield ribbon.js — risk banner + 5-tab analysis drawer
 
 const THEME = {
   bg: "#020817", fg: "#f8fafc", primary: "#3b82f6",
@@ -6,20 +6,20 @@ const THEME = {
 };
 
 const VERDICT_COLORS = {
-  threat:     { bg:"rgba(239,68,68,0.1)",   border:"#ef4444", text:"#fecaca", label:"PHISHING ATTACK"    },
-  suspicious: { bg:"rgba(245,158,11,0.1)",  border:"#f59e0b", text:"#fef3c7", label:"SUSPICIOUS ACTIVITY"},
-  safe:       { bg:"rgba(16,185,129,0.1)",  border:"#10b981", text:"#d1fae5", label:"SCAN VERIFIED"      },
-  error:      { bg:"rgba(100,116,139,0.1)", border:"#64748b", text:"#f1f5f9", label:"SCAN FAILED"        },
+  threat: { bg: "rgba(239,68,68,0.1)", border: "#ef4444", text: "#fecaca", label: "PHISHING ATTACK" },
+  suspicious: { bg: "rgba(245,158,11,0.1)", border: "#f59e0b", text: "#fef3c7", label: "SUSPICIOUS ACTIVITY" },
+  safe: { bg: "rgba(16,185,129,0.1)", border: "#10b981", text: "#d1fae5", label: "SCAN VERIFIED" },
+  error: { bg: "rgba(100,116,139,0.1)", border: "#64748b", text: "#f1f5f9", label: "SCAN FAILED" },
 };
 
 const ATTACK_ICONS = {
   credential_harvest: "🎣",
-  bec:                "🏢",
-  spear_phish:        "🎯",
-  malware_delivery:   "💀",
+  bec: "🏢",
+  spear_phish: "🎯",
+  malware_delivery: "💀",
   social_engineering: "🧠",
-  ai_generated:       "🤖",
-  unknown:            "❓",
+  ai_generated: "🤖",
+  unknown: "❓",
 };
 
 // ── Styles (injected once) ────────────────────────────────────────────────
@@ -146,8 +146,8 @@ function renderRibbon(result) {
         <span style="width:4px;height:4px;border-radius:50%;background:${THEME.border}"></span>
         <span style="font-weight:700;color:#fff">${score}% RISK</span>
         ${result.ai_generated_score >= 65
-          ? `<span class="pg-pill" style="background:linear-gradient(45deg,#7c3aed,#4f46e5);color:#fff">🤖 AI-DETECTED</span>`
-          : ""}
+      ? `<span class="pg-pill" style="background:linear-gradient(45deg,#7c3aed,#4f46e5);color:#fff">🤖 AI-DETECTED</span>`
+      : ""}
         ${attackBadge}
         ${attBadge}
       </div>
@@ -164,19 +164,19 @@ function renderRibbon(result) {
 
   emailBody.parentNode.insertBefore(ribbon, emailBody);
   const btn = ribbon.querySelector("#pg-details-btn");
-  btn.onmouseover = () => { btn.style.borderColor=c.border; btn.style.background="rgba(255,255,255,0.1)"; };
-  btn.onmouseout  = () => { btn.style.borderColor=THEME.border; btn.style.background="rgba(255,255,255,0.05)"; };
+  btn.onmouseover = () => { btn.style.borderColor = c.border; btn.style.background = "rgba(255,255,255,0.1)"; };
+  btn.onmouseout = () => { btn.style.borderColor = THEME.border; btn.style.background = "rgba(255,255,255,0.05)"; };
   btn.onclick = () => showDetailsDrawer(result);
 }
 
 // ── Link tooltips ─────────────────────────────────────────────────────────
 function renderTooltipsOnLinks(result) {
   const isHigh = result.score >= 70;
-  const color  = isHigh ? VERDICT_COLORS.threat.border : VERDICT_COLORS.suspicious.border;
+  const color = isHigh ? VERDICT_COLORS.threat.border : VERDICT_COLORS.suspicious.border;
   document.querySelectorAll(".a3s.aiL a").forEach((link) => {
-    link.style.boxShadow   = `inset 0 -2px 0 ${color}`;
-    link.style.color       = color;
-    link.style.fontWeight  = "600";
+    link.style.boxShadow = `inset 0 -2px 0 ${color}`;
+    link.style.color = color;
+    link.style.fontWeight = "600";
     link.style.textDecoration = "none";
   });
 }
@@ -187,7 +187,7 @@ function showDetailsDrawer(result) {
   if (old) { old.remove(); return; }
   injectStyles();
 
-  const c   = VERDICT_COLORS[result.verdict] || VERDICT_COLORS.error;
+  const c = VERDICT_COLORS[result.verdict] || VERDICT_COLORS.error;
   const cls = result.classification;
 
   // ── Tab definitions ────────────────────────────────────────────────────
@@ -197,18 +197,18 @@ function showDetailsDrawer(result) {
   // Tab 4: Attachments
   // Tab 5: Actions
   const TAB_SVGS = {
-    overview:    `<svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>`,
-    signals:     `<svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`,
-    urls:        `<svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`,
+    overview: `<svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>`,
+    signals: `<svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`,
+    urls: `<svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`,
     attachments: `<svg viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>`,
-    actions:     `<svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
+    actions: `<svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>`,
   };
   const tabs = [
-    { id:"overview",     label:"Overview"    },
-    { id:"signals",      label:"Signals"     },
-    { id:"urls",         label:"URLs"        },
-    { id:"attachments",  label:"Attachments" },
-    { id:"actions",      label:"Actions"     },
+    { id: "overview", label: "Overview" },
+    { id: "signals", label: "Signals" },
+    { id: "urls", label: "URLs" },
+    { id: "attachments", label: "Attachments" },
+    { id: "actions", label: "Actions" },
   ];
 
   const drawer = document.createElement("div");
@@ -230,7 +230,7 @@ function showDetailsDrawer(result) {
       <div>
         <div style="font-size:10px;color:${THEME.primary};font-weight:800;
                     letter-spacing:2px;margin-bottom:2px">THREAT ANALYSIS</div>
-        <div style="font-weight:700;font-size:16px;color:#fff">PhishGuard Intelligence</div>
+        <div style="font-weight:700;font-size:16px;color:#fff">CyberShield Intelligence</div>
       </div>
       <button id="pg-close-drawer" style="
         border:none;background:rgba(255,255,255,0.05);width:32px;height:32px;
@@ -242,7 +242,7 @@ function showDetailsDrawer(result) {
     <div style="display:flex;border-bottom:1px solid ${THEME.border};
                 padding:0 16px;flex-shrink:0;background:rgba(255,255,255,0.01)">
       ${tabs.map(t => `
-        <button class="pg-tab-btn${t.id==="overview"?" active":""}" data-tab="${t.id}" aria-label="${t.label}">
+        <button class="pg-tab-btn${t.id === "overview" ? " active" : ""}" data-tab="${t.id}" aria-label="${t.label}">
           ${TAB_SVGS[t.id]}
           <span class="pg-tab-tip">${t.label}</span>
         </button>`).join("")}
@@ -260,12 +260,12 @@ function showDetailsDrawer(result) {
             <span class="pg-pill" style="background:${c.border};color:#fff;font-size:12px;padding:4px 16px">${c.label}</span>
           </div>
           ${result.ai_generated_score >= 65
-            ? `<div style="margin-top:10px">
+      ? `<div style="margin-top:10px">
                  <span class="pg-pill" style="background:rgba(124,58,237,0.2);color:#c4b5fd;border:1px solid #7c3aed">
                    🤖 AI-Generated Content Detected (${result.ai_generated_score}%)
                  </span>
                </div>`
-            : ""}
+      : ""}
         </div>
 
         ${cls ? `
@@ -285,15 +285,15 @@ function showDetailsDrawer(result) {
             ${cls.attack_type_description}
           </div>
           ${cls.target_brand
-            ? `<div style="font-size:11px;color:${THEME.fg}">
+        ? `<div style="font-size:11px;color:${THEME.fg}">
                  🎯 Target brand: <strong style="color:${c.border}">${cls.target_brand}</strong>
                </div>`
-            : ""}
+        : ""}
           ${cls.target_persona
-            ? `<div style="font-size:11px;color:${THEME.fg};margin-top:4px">
+        ? `<div style="font-size:11px;color:${THEME.fg};margin-top:4px">
                  👤 Target persona: <strong style="color:#f59e0b">${cls.target_persona}</strong>
                </div>`
-            : ""}
+        : ""}
         </div>` : ""}
 
         <div class="pg-card">
@@ -311,9 +311,9 @@ function showDetailsDrawer(result) {
           <div style="font-weight:700;font-size:11px;color:${THEME.muted};letter-spacing:1px;margin-bottom:10px">
             TOP RISK REASONS
           </div>
-          ${result.reasons.map((r,i) => `
+          ${result.reasons.map((r, i) => `
             <div style="display:flex;gap:10px;margin-bottom:8px;font-size:12px">
-              <span style="color:${c.border};font-weight:700;flex-shrink:0">${i+1}.</span>
+              <span style="color:${c.border};font-weight:700;flex-shrink:0">${i + 1}.</span>
               <span style="color:${THEME.fg};line-height:1.5">${r}</span>
             </div>`).join("")}
         </div>` : ""}
@@ -322,15 +322,15 @@ function showDetailsDrawer(result) {
       <!-- ── TAB: SIGNALS ── -->
       <div class="pg-tab-content" id="pg-tab-signals">
         <div style="font-size:11px;color:${THEME.muted};margin-bottom:14px;letter-spacing:0.5px">
-          ${(result.signals||[]).filter(s=>s.score>0).length} of ${(result.signals||[]).length} signals triggered
+          ${(result.signals || []).filter(s => s.score > 0).length} of ${(result.signals || []).length} signals triggered
         </div>
         ${(result.signals || [])
-            .filter(s => s.score > 0)
-            .sort((a,b) => b.score - a.score)
-            .map(s => {
-              const color = s.severity==="red" ? "#ef4444"
-                          : s.severity==="yellow" ? "#f59e0b" : "#10b981";
-              return `
+      .filter(s => s.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .map(s => {
+        const color = s.severity === "red" ? "#ef4444"
+          : s.severity === "yellow" ? "#f59e0b" : "#10b981";
+        return `
                 <div class="pg-card" style="border-left:3px solid ${color};border-radius:0 12px 12px 0;padding:12px 14px">
                   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
                     <span style="font-weight:700;font-size:12px;color:#fff">${s.name}</span>
@@ -341,35 +341,35 @@ function showDetailsDrawer(result) {
                   </div>
                   <div style="color:${THEME.muted};font-size:11px;margin-top:4px;line-height:1.4">${s.detail}</div>
                 </div>`;
-            }).join("") ||
-            `<div style="color:${THEME.muted};font-size:12px;text-align:center;padding:30px">
+      }).join("") ||
+    `<div style="color:${THEME.muted};font-size:12px;text-align:center;padding:30px">
                No high-risk signals triggered.
              </div>`}
       </div>
 
       <!-- ── TAB: URLs ── -->
       <div class="pg-tab-content" id="pg-tab-urls">
-        ${(result.urls_found||[]).length === 0
-          ? `<div style="color:${THEME.muted};font-size:12px;text-align:center;padding:30px">No URLs found in this email.</div>`
-          : (result.urls_found||[]).map((url, i) => {
-              const isShort = url.length > 60;
-              const displayUrl = isShort ? url.slice(0,60)+"…" : url;
-              const hasIp  = /https?:\/\/(\d{1,3}\.){3}\d{1,3}/.test(url);
-              const hasSus = /paypa1|g00gle|amaz0n|micros0ft|\.xyz|\.tk|\.gq/.test(url);
-              const isShortener = /bit\.ly|tinyurl|t\.co|goo\.gl/.test(url);
-              const risk = hasIp ? "red" : hasSus ? "red" : isShortener ? "yellow" : "green";
-              const riskColor = risk==="red"?"#ef4444":risk==="yellow"?"#f59e0b":"#10b981";
-              const riskLabel = risk==="red"?"HIGH RISK":risk==="yellow"?"SUSPICIOUS":"LOW RISK";
-              const flags = [
-                hasIp       && "IP address host",
-                hasSus      && "Lookalike/suspicious domain",
-                isShortener && "URL shortener",
-              ].filter(Boolean);
-              return `
+        ${(result.urls_found || []).length === 0
+      ? `<div style="color:${THEME.muted};font-size:12px;text-align:center;padding:30px">No URLs found in this email.</div>`
+      : (result.urls_found || []).map((url, i) => {
+        const isShort = url.length > 60;
+        const displayUrl = isShort ? url.slice(0, 60) + "…" : url;
+        const hasIp = /https?:\/\/(\d{1,3}\.){3}\d{1,3}/.test(url);
+        const hasSus = /paypa1|g00gle|amaz0n|micros0ft|\.xyz|\.tk|\.gq/.test(url);
+        const isShortener = /bit\.ly|tinyurl|t\.co|goo\.gl/.test(url);
+        const risk = hasIp ? "red" : hasSus ? "red" : isShortener ? "yellow" : "green";
+        const riskColor = risk === "red" ? "#ef4444" : risk === "yellow" ? "#f59e0b" : "#10b981";
+        const riskLabel = risk === "red" ? "HIGH RISK" : risk === "yellow" ? "SUSPICIOUS" : "LOW RISK";
+        const flags = [
+          hasIp && "IP address host",
+          hasSus && "Lookalike/suspicious domain",
+          isShortener && "URL shortener",
+        ].filter(Boolean);
+        return `
                 <div class="pg-card" style="border-left:3px solid ${riskColor};border-radius:0 12px 12px 0">
                   <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
-                    <span style="font-size:11px;color:${THEME.muted};font-weight:700">URL ${i+1}</span>
-                    <span class="pg-pill" style="background:rgba(${risk==="red"?"239,68,68":risk==="yellow"?"245,158,11":"16,185,129"},0.15);
+                    <span style="font-size:11px;color:${THEME.muted};font-weight:700">URL ${i + 1}</span>
+                    <span class="pg-pill" style="background:rgba(${risk === "red" ? "239,68,68" : risk === "yellow" ? "245,158,11" : "16,185,129"},0.15);
                           color:${riskColor};border:1px solid ${riskColor}">${riskLabel}</span>
                   </div>
                   <div style="font-family:monospace;font-size:11px;color:${THEME.fg};
@@ -378,33 +378,33 @@ function showDetailsDrawer(result) {
                     ${displayUrl}
                   </div>
                   ${flags.length
-                    ? `<div style="display:flex;flex-wrap:wrap;gap:4px">
-                         ${flags.map(f=>`<span class="pg-pill" style="background:rgba(239,68,68,0.1);
+            ? `<div style="display:flex;flex-wrap:wrap;gap:4px">
+                         ${flags.map(f => `<span class="pg-pill" style="background:rgba(239,68,68,0.1);
                                 color:#fca5a5;border:1px solid rgba(239,68,68,0.3)">${f}</span>`).join("")}
                        </div>`
-                    : `<div style="font-size:11px;color:${THEME.muted}">No obvious URL threats detected</div>`}
+            : `<div style="font-size:11px;color:${THEME.muted}">No obvious URL threats detected</div>`}
                 </div>`;
-            }).join("")}
+      }).join("")}
       </div>
 
       <!-- ── TAB: ATTACHMENTS ── -->
       <div class="pg-tab-content" id="pg-tab-attachments">
         ${!(result.attachments?.length)
-          ? `<div style="color:${THEME.muted};font-size:12px;text-align:center;padding:30px">
+      ? `<div style="color:${THEME.muted};font-size:12px;text-align:center;padding:30px">
                No attachments detected in this email.
              </div>`
-          : result.attachments.map(att => {
-              const vc = att.verdict==="malicious" ? "#ef4444"
-                       : att.verdict==="suspicious" ? "#f59e0b" : "#10b981";
-              const vl = att.verdict==="malicious" ? "MALICIOUS"
-                       : att.verdict==="suspicious" ? "SUSPICIOUS" : "CLEAN";
-              const ext = att.filename.split(".").pop()?.toUpperCase() || "?";
-              const flags = [
-                att.macro_detected     && "VBA macros detected",
-                att.js_detected        && "Embedded JavaScript",
-                att.extension_spoofed  && "Extension spoofing",
-              ].filter(Boolean);
-              return `
+      : result.attachments.map(att => {
+        const vc = att.verdict === "malicious" ? "#ef4444"
+          : att.verdict === "suspicious" ? "#f59e0b" : "#10b981";
+        const vl = att.verdict === "malicious" ? "MALICIOUS"
+          : att.verdict === "suspicious" ? "SUSPICIOUS" : "CLEAN";
+        const ext = att.filename.split(".").pop()?.toUpperCase() || "?";
+        const flags = [
+          att.macro_detected && "VBA macros detected",
+          att.js_detected && "Embedded JavaScript",
+          att.extension_spoofed && "Extension spoofing",
+        ].filter(Boolean);
+        return `
                 <div class="pg-card" style="border-left:3px solid ${vc};border-radius:0 12px 12px 0">
                   <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
                     <div style="width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,0.05);
@@ -419,7 +419,7 @@ function showDetailsDrawer(result) {
                     </div>
                     <div style="text-align:right;flex-shrink:0">
                       <div style="font-family:monospace;font-size:18px;font-weight:700;color:${vc}">${att.risk_score}</div>
-                      <span class="pg-pill" style="background:rgba(${att.verdict==="malicious"?"239,68,68":att.verdict==="suspicious"?"245,158,11":"16,185,129"},0.15);
+                      <span class="pg-pill" style="background:rgba(${att.verdict === "malicious" ? "239,68,68" : att.verdict === "suspicious" ? "245,158,11" : "16,185,129"},0.15);
                             color:${vc};border:1px solid ${vc}">${vl}</span>
                     </div>
                   </div>
@@ -427,18 +427,18 @@ function showDetailsDrawer(result) {
                     <div class="pg-bar" style="width:${att.risk_score}%;background:${vc}"></div>
                   </div>
                   ${flags.length
-                    ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px">
-                         ${flags.map(f=>`<span class="pg-pill" style="background:rgba(239,68,68,0.1);
+            ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px">
+                         ${flags.map(f => `<span class="pg-pill" style="background:rgba(239,68,68,0.1);
                                 color:#fca5a5;border:1px solid rgba(239,68,68,0.3)">⚠ ${f}</span>`).join("")}
                        </div>`
-                    : ""}
-                  ${att.signals?.filter(s=>s.score>20).map(s => `
+            : ""}
+                  ${att.signals?.filter(s => s.score > 20).map(s => `
                     <div style="margin-top:8px;font-size:11px;color:${THEME.muted};
                                 border-top:1px solid ${THEME.border};padding-top:8px">
                       <strong style="color:${THEME.fg}">${s.name}:</strong> ${s.detail}
                     </div>`).join("") || ""}
                 </div>`;
-            }).join("")}
+      }).join("")}
       </div>
 
       <!-- ── TAB: ACTIONS ── -->
@@ -448,15 +448,15 @@ function showDetailsDrawer(result) {
           <div style="font-weight:700;font-size:12px;color:#fff;margin-bottom:12px">Quick Actions</div>
           <div style="display:flex;flex-direction:column;gap:8px">
             <button class="pg-action-btn" onclick="pgCopyReport(${JSON.stringify(JSON.stringify({
-              verdict: "__VERDICT__", score: "__SCORE__", attack: "__ATK__", reasons: "__REASONS__"
-            }))})">
+        verdict: "__VERDICT__", score: "__SCORE__", attack: "__ATK__", reasons: "__REASONS__"
+      }))})">
               📋 Copy Threat Report
             </button>
             <button class="pg-action-btn" id="pg-mark-spam-btn">
               🚫 Mark as Spam &amp; Delete
             </button>
             <button class="pg-action-btn" id="pg-open-dash-btn">
-              📊 Open PhishGuard Dashboard
+              📊 Open CyberShield Dashboard
             </button>
           </div>
         </div>
@@ -493,10 +493,10 @@ function showDetailsDrawer(result) {
   const actionsTab = drawer.querySelector("#pg-tab-actions");
   actionsTab.innerHTML = actionsTab.innerHTML
     .replace("__VERDICT__", result.verdict)
-    .replace("__SCORE__",   result.score)
-    .replace("__ATK__",     result.classification?.attack_type_label || "unknown")
-    .replace("__REASONS__", (result.reasons||[]).join(" | "))
-    .replace("__SCAN_ID__", result.id?.slice(0,8)+"…" || "—")
+    .replace("__SCORE__", result.score)
+    .replace("__ATK__", result.classification?.attack_type_label || "unknown")
+    .replace("__REASONS__", (result.reasons || []).join(" | "))
+    .replace("__SCAN_ID__", result.id?.slice(0, 8) + "…" || "—")
     .replace("__SIG_COUNT__", result.signals?.length || 0)
     .replace("__URL_COUNT__", result.urls_found?.length || 0)
     .replace("__ATT_COUNT__", result.attachments?.length || 0)
@@ -516,7 +516,7 @@ function showDetailsDrawer(result) {
 
   // ── Button wiring ─────────────────────────────────────────────────────
   drawer.querySelector("#pg-close-drawer").onclick = () => drawer.remove();
-  drawer.querySelector("#pg-fb-safe").onclick  = () => pgSendFeedback(result.id, "false_positive", drawer);
+  drawer.querySelector("#pg-fb-safe").onclick = () => pgSendFeedback(result.id, "false_positive", drawer);
   drawer.querySelector("#pg-fb-phish").onclick = () => pgSendFeedback(result.id, "false_negative", drawer);
   drawer.querySelector("#pg-open-dash-btn").onclick = () =>
     window.open("http://localhost:5173", "_blank");
@@ -527,10 +527,10 @@ function showDetailsDrawer(result) {
   // Copy report button
   drawer.querySelector(".pg-action-btn").onclick = () => {
     const report = [
-      `PhishGuard Threat Report`,
+      `CyberShield Threat Report`,
       `Verdict: ${result.verdict.toUpperCase()} (${result.score}/100)`,
       `Attack type: ${result.classification?.attack_type_label || "unknown"}`,
-      `Reasons: ${(result.reasons||[]).join("; ")}`,
+      `Reasons: ${(result.reasons || []).join("; ")}`,
       `Scan ID: ${result.id}`,
     ].join("\n");
     navigator.clipboard.writeText(report).then(() => {
@@ -544,7 +544,7 @@ function showDetailsDrawer(result) {
 window.pgSendFeedback = async (scanId, correction, drawer) => {
   try {
     const btns = drawer.querySelectorAll("#pg-fb-safe, #pg-fb-phish");
-    btns.forEach(b => { b.disabled=true; b.style.opacity="0.5"; });
+    btns.forEach(b => { b.disabled = true; b.style.opacity = "0.5"; });
     await fetch("http://localhost:8000/feedback", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -552,6 +552,6 @@ window.pgSendFeedback = async (scanId, correction, drawer) => {
     });
     btns.forEach(b => { b.textContent = "✅ Feedback sent!"; b.style.color = THEME.primary; });
   } catch (_) {
-    alert("Could not reach PhishGuard backend.");
+    alert("Could not reach CyberShield backend.");
   }
 };

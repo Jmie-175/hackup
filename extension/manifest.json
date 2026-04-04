@@ -1,9 +1,14 @@
 {
   "manifest_version": 3,
-  "name": "PhishGuard",
+  "name": "CyberShield",
   "version": "1.0.0",
   "description": "AI-powered real-time phishing detection for Gmail",
-  "permissions": ["storage", "tabs", "scripting", "notifications"],
+  "permissions": [
+    "storage",
+    "tabs",
+    "scripting",
+    "notifications"
+  ],
   "host_permissions": [
     "https://mail.google.com/*",
     "http://localhost:8000/*"
@@ -13,22 +18,27 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://mail.google.com/*"],
-      "js": ["content.js", "ribbon.js"],
+      "matches": [
+        "https://mail.google.com/*"
+      ],
+      "js": [
+        "content.js",
+        "ribbon.js"
+      ],
       "run_at": "document_idle"
     }
   ],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
-      "16":  "icons/icon16.png",
-      "48":  "icons/icon48.png",
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
       "128": "icons/icon128.png"
     }
   },
   "icons": {
-    "16":  "icons/icon16.png",
-    "48":  "icons/icon48.png",
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   }
 }

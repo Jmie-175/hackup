@@ -1,4 +1,4 @@
-// PhishGuard popup.js
+// CyberShield popup.js
 
 const API = 'http://localhost:8000';
 let enabled = true;
@@ -6,8 +6,8 @@ let history = [];
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 chrome.storage.local.get(['pgEnabled', 'scanHistory', 'pgSettings'], (res) => {
-  enabled  = res.pgEnabled !== false;
-  history  = res.scanHistory || [];
+  enabled = res.pgEnabled !== false;
+  history = res.scanHistory || [];
 
   updateToggleUI();
   renderFeed(history);
@@ -47,7 +47,7 @@ document.getElementById('toggle').addEventListener('click', () => {
 });
 
 function updateToggleUI() {
-  const el  = document.getElementById('toggle');
+  const el = document.getElementById('toggle');
   const lbl = document.getElementById('toggle-label');
   const sub = document.getElementById('header-sub');
   el.classList.toggle('on', enabled);
@@ -72,15 +72,15 @@ document.querySelectorAll('.mini-toggle').forEach((el) => {
 
 // ── Quick Scan ────────────────────────────────────────────────────────────────
 document.getElementById('scan-btn').addEventListener('click', async () => {
-  const content   = document.getElementById('scan-input').value.trim();
+  const content = document.getElementById('scan-input').value.trim();
   const inputType = document.getElementById('scan-type').value;
-  const btn       = document.getElementById('scan-btn');
+  const btn = document.getElementById('scan-btn');
   const resultBox = document.getElementById('scan-result');
 
   if (!content) return;
 
   btn.textContent = 'Analysing…';
-  btn.disabled    = true;
+  btn.disabled = true;
   resultBox.style.display = 'none';
 
   try {
@@ -92,30 +92,32 @@ document.getElementById('scan-btn').addEventListener('click', async () => {
     const r = await resp.json();
 
     const verdictEl = document.getElementById('result-verdict');
-    const reasonEl  = document.getElementById('result-reason');
-    const labels    = { threat: 'Phishing Detected', suspicious: 'Suspicious', safe: 'Looks Safe' };
+    const reasonEl = document.getElementById('result-reason');
+    const labels = { threat: 'Phishing Detected', suspicious: 'Suspicious', safe: 'Looks Safe' };
 
-    verdictEl.textContent  = `${labels[r.verdict] || r.verdict} — ${r.score}/100`;
-    verdictEl.className    = `result-verdict ${r.verdict}`;
-    reasonEl.textContent   = r.reasons?.[0] || r.explanation || '';
+    verdictEl.textContent = `${labels[r.verdict] || r.verdict} — ${r.score}/100`;
+    verdictEl.className = `result-verdict ${r.verdict}`;
+    reasonEl.textContent = r.reasons?.[0] || r.explanation || '';
     resultBox.style.display = 'block';
 
     // Add to local history
-    history.unshift({ id: r.id, verdict: r.verdict, score: r.score,
-                      timestamp: r.timestamp, reason: r.reasons?.[0] || '' });
+    history.unshift({
+      id: r.id, verdict: r.verdict, score: r.score,
+      timestamp: r.timestamp, reason: r.reasons?.[0] || ''
+    });
     if (history.length > 50) history.pop();
     chrome.storage.local.set({ scanHistory: history });
     renderFeed(history);
     updateStats(history);
   } catch (err) {
-    const verdictEl        = document.getElementById('result-verdict');
-    verdictEl.textContent  = 'Error — backend unreachable';
-    verdictEl.className    = 'result-verdict';
-    document.getElementById('result-reason').textContent = 'Make sure the PhishGuard backend is running on port 8000.';
+    const verdictEl = document.getElementById('result-verdict');
+    verdictEl.textContent = 'Error — backend unreachable';
+    verdictEl.className = 'result-verdict';
+    document.getElementById('result-reason').textContent = 'Make sure the CyberShield backend is running on port 8000.';
     document.getElementById('scan-result').style.display = 'block';
   } finally {
     btn.textContent = 'Analyse';
-    btn.disabled    = false;
+    btn.disabled = false;
   }
 });
 
@@ -162,7 +164,7 @@ function renderFeed(items) {
   }
   feed.innerHTML = items.slice(0, 20).map((item) => {
     const dotClass = `dot-${item.verdict || 'error'}`;
-    const time     = item.timestamp
+    const time = item.timestamp
       ? new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       : '';
     const label = item.reason
@@ -181,7 +183,7 @@ function renderFeed(items) {
 }
 
 function updateStats(items) {
-  document.getElementById('stat-total').textContent      = items.length;
-  document.getElementById('stat-threats').textContent    = items.filter((i) => i.verdict === 'threat').length;
+  document.getElementById('stat-total').textContent = items.length;
+  document.getElementById('stat-threats').textContent = items.filter((i) => i.verdict === 'threat').length;
   document.getElementById('stat-suspicious').textContent = items.filter((i) => i.verdict === 'suspicious').length;
 }
