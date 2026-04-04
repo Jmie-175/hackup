@@ -27,7 +27,7 @@ SUSPICIOUS_TLDS = {
 SHORTENERS = {
     "bit.ly", "tinyurl.com", "t.co", "goo.gl", "ow.ly",
     "buff.ly", "short.io", "rebrand.ly", "cutt.ly", "is.gd",
-    "rb.gy", "tiny.cc", "shorte.st",
+    "rb.gy", "tiny.cc", "shorte.st", "short.ly",
 }
 
 IP_PATTERN = re.compile(r"https?://(\d{1,3}\.){3}\d{1,3}")
@@ -225,11 +225,18 @@ def analyse_domain_homoglyphs(domain: str) -> tuple[bool, list[str]]:
             all_found.append(f"mixed-script in '{label}'")
 
         # Digit substitution check: normalised version matches a known brand
+        # Split by hyphen so 'faceb00k-verification' correctly isolates 'faceb00k'
         normalised, _ = _normalise_to_ascii(target)
-        # Remove non-alpha for brand comparison
-        brand_candidate = re.sub(r"[^a-z]", "", normalised)
-        if brand_candidate in KNOWN_BRANDS and brand_candidate != re.sub(r"[^a-z]", "", label):
-            all_found.append(f"brand-spoof: '{label}' normalises to '{brand_candidate}'")
+        norm_parts = re.split(r"[-_]", normalised)
+        orig_parts = re.split(r"[-_]", label)
+        for part, orig_part in zip(norm_parts, orig_parts):
+            brand_candidate = re.sub(r"[^a-z]", "", part)
+            if not brand_candidate:
+                continue
+            orig_alpha = re.sub(r"[^a-z]", "", orig_part)
+            if brand_candidate in KNOWN_BRANDS and brand_candidate != orig_alpha:
+                all_found.append(f"brand-spoof('{orig_part}'->'{brand_candidate}')")
+                break
 
     return bool(all_found), all_found
 
@@ -330,28 +337,83 @@ def analyse_url(url: str) -> list[SignalResult]:
         detail="URL shortened — true destination hidden" if shortener_score else "Direct URL",
     ))
 
-    # ── Excessive encoding ────────────────────────────────────────────────
-    encoded_matches = ENCODED_PATTERN.findall(url)
-    encode_score = min(len(encoded_matches) * 10, 65)
+    # ── Excessive URL length ──────────────────────────────────────────────
+    length_score = 40 if len(url) > 75 else 0
     signals.append(SignalResult(
-        name="URL encoding",
-        score=encode_score,
-        severity="yellow" if encode_score > 20 else "green",
-        detail=f"{len(encoded_matches)} encoded segment(s) detected",
+        name="Excessive URL length",
+        score=length_score,
+        severity="yellow" if length_score else "green",
+        detail=f"URL is unusually long ({len(url)} chars)" if length_score else "Standard length",
     ))
 
-    # ── Login/credential path keywords ────────────────────────────────────
+    # ── Obfuscation / Encoding ────────────────────────────────────────────
+    encoded_matches = ENCODED_PATTERN.findall(url)
+    obfs_score = 0
+    obfs_reasons = []
+
+    if "@" in parsed.netloc:
+        obfs_score = 95
+        obfs_reasons.append("Basic Auth format (@) used to hide domain")
+    if "%00" in url:
+        obfs_score = max(obfs_score, 90)
+        obfs_reasons.append("Null byte (%00) injection attempt")
+
+    if encoded_matches:
+        dynamic_score = min(len(encoded_matches) * 10, 65)
+        if dynamic_score > 20: 
+            obfs_reasons.append(f"{len(encoded_matches)} encoded segments")
+        obfs_score = max(obfs_score, dynamic_score)
+
+    signals.append(SignalResult(
+        name="Obfuscation / Encoding",
+        score=obfs_score,
+        severity="red" if obfs_score >= 80 else ("yellow" if obfs_score > 20 else "green"),
+        detail="; ".join(obfs_reasons) if obfs_reasons else "Normal encoding",
+    ))
+
+    # ── Suspicious keywords (Domain + Path) ───────────────────────────────
     path_keywords = [
-        "login", "signin", "verify", "account", "secure", "update",
+        "login", "signin", "verify", "verification", "account", "secure", "update",
         "confirm", "auth", "credential", "password", "reset", "token",
+        "suspended", "alert", "warning", "support",
     ]
-    path_hits = [k for k in path_keywords if k in path]
+    # Check across both domain (excluding tld) and path
+    target_area = (domain.rsplit(".", 1)[0] + "-" + path).lower()
+    path_hits = [k for k in path_keywords if k in target_area]
     path_score = min(len(path_hits) * 15, 65)
     signals.append(SignalResult(
-        name="Path keywords",
+        name="Suspicious keywords",
         score=path_score,
         severity="yellow" if path_score > 20 else "green",
-        detail=f"Sensitive path keywords: {', '.join(path_hits) or 'none'}",
+        detail=f"Sensitive keywords in URL: {', '.join(path_hits) or 'none'}",
+    ))
+
+    # ── Brand impersonation (Fake HTTPS / Domain tricks) ──────────────────
+    domain_labels = domain.split(".")
+    # The actual registered domain is typically the last two labels (rudimentary extract)
+    root_domain = ".".join(domain_labels[-2:]) if len(domain_labels) >= 2 else domain
+    root_alpha = re.sub(r"[^a-z]", "", root_domain.split(".")[0])
+    
+    brand_hits = []
+    # Check all labels for brand references, except if the root domain IS the brand.
+    for brand in KNOWN_BRANDS:
+        if root_alpha == brand:
+             continue # Completely legitimate! e.g., paypal.com, paypal.co.uk (rudimentary exclusion)
+        
+        # Check subdomains
+        if len(domain_labels) >= 3 and any(brand in lbl for lbl in domain_labels[:-2]):
+             brand_hits.append(f"Subdomain trick ({brand})")
+        
+        # Check misleading domain parts (e.g. paypal-secure-login)
+        elif brand in root_domain.split(".")[0]:
+             brand_hits.append(f"Misleading domain ({brand})")
+
+    brand_ip_score = 90 if brand_hits else 0
+    signals.append(SignalResult(
+        name="Brand impersonation (URL)",
+        score=brand_ip_score,
+        severity="red" if brand_ip_score else "green",
+        detail="; ".join(brand_hits) if brand_hits else "No overt brand spoofing in URL structure",
     ))
 
     return signals

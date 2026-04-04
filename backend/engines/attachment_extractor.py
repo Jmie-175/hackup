@@ -9,6 +9,7 @@ user uploads a file through the dashboard.
 """
 import re
 from models.scan_models import AttachmentResult, SignalResult
+from scoring.risk_engine import compute_score, get_verdict
 
 HIGH_RISK_EXT  = {".exe",".bat",".cmd",".ps1",".vbs",".js",".jse",
                   ".wsf",".scr",".pif",".com",".hta",".msi",".dll"}
@@ -54,10 +55,15 @@ def score_attachment_metadata(
     mime_score = 0
     mime_detail = "MIME type consistent with extension"
     if mime_type and mime_type not in SAFE_MIME_TYPES:
-        if ext == ".pdf" and "pdf" not in mime_type:
+        mime_lower = mime_type.lower()
+        if "exe" in mime_lower or "msdownload" in mime_lower or "executable" in mime_lower or "octet-stream" in mime_lower:
+            if ext not in HIGH_RISK_EXT:
+                mime_score = 95
+                mime_detail = f"DANGEROUS: File claims {ext} but MIME implies arbitrary binary/executable ({mime_type})"
+        elif ext == ".pdf" and "pdf" not in mime_lower:
             mime_score = 75
             mime_detail = f"MIME '{mime_type}' doesn't match .pdf extension"
-        elif ext in (".doc",".docx") and "word" not in mime_type and "office" not in mime_type:
+        elif ext in (".doc",".docx") and "word" not in mime_lower and "office" not in mime_lower:
             mime_score = 60
             mime_detail = f"MIME '{mime_type}' doesn't match Office extension"
     signals.append(SignalResult(name="MIME type", score=mime_score,
@@ -75,7 +81,7 @@ def score_attachment_metadata(
     # 4. Suspicious filename
     name_hits = [p for p in SUSPICIOUS_NAME_PATTERNS if re.search(p, name_lower)]
     name_score = min(len(name_hits) * 18, 65)
-    signals.append(SignalResult(name="Filename pattern", score=name_score,
+    signals.append(SignalResult(name="Filename suspicion", score=name_score,
         severity="yellow" if name_score > 20 else "green",
         detail=f"Suspicious keywords: {', '.join(name_hits[:3]) or 'none'}"))
 
@@ -90,14 +96,11 @@ def score_attachment_metadata(
 
     # Composite score
     if signals:
-        risk_score = min(int(sum(s.score for s in signals) / len(signals) * 1.4), 100)
-        max_sig = max(s.score for s in signals)
-        if max_sig >= 80:
-            risk_score = max(risk_score, 65)
+        risk_score = compute_score(signals)
     else:
         risk_score = 0
 
-    verdict = "malicious" if risk_score >= 70 else "suspicious" if risk_score >= 40 else "clean"
+    verdict = get_verdict(risk_score)
 
     return AttachmentResult(
         filename=filename,

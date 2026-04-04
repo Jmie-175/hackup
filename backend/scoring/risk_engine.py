@@ -24,8 +24,10 @@ WEIGHTS_EMAIL = {
     "Lookalike domain":     0.22,  # raised from 0.18
     "Homoglyph in sender":  0.24,  # new — Unicode confusable in sender addr
     "URL shortener":        0.07,
-    "URL encoding":         0.04,
-    "Path keywords":        0.06,
+    "Obfuscation / Encoding": 0.10,
+    "Suspicious keywords":  0.10,
+    "Brand impersonation (URL)": 0.15,
+    "Excessive URL length": 0.04,
 }
 
 WEIGHTS_URL = {
@@ -34,13 +36,16 @@ WEIGHTS_URL = {
     "Domain TLD":        0.15,
     "URL shortener":     0.12,
     "Subdomain depth":   0.10,
-    "URL encoding":      0.08,
-    "Path keywords":     0.10,
+    "Obfuscation / Encoding": 0.20,
+    "Suspicious keywords": 0.15,
+    "Brand impersonation (URL)": 0.30,
+    "Excessive URL length": 0.08,
 }
 
 WEIGHTS_ATTACHMENT = {
     "File extension":         0.20,
     "Magic bytes / file type": 0.25,
+    "MIME type":               0.25,
     "Double extension":        0.25,
     "Filename suspicion":      0.12,
     "Office macros":           0.20,
