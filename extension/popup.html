@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PhishGuard</title>
+<style>
+  :root {
+    --background: #020817;
+    --foreground: #f8fafc;
+    --primary: #3b82f6;
+    --secondary: #1e293b;
+    --card: #0c111d;
+    --border: #1e293b;
+    --muted: #64748b;
+    --threat: #ef4444;
+    --suspicious: #f59e0b;
+    --safe: #10b981;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    width: 320px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 13px;
+    background: var(--background);
+    color: var(--foreground);
+    line-height: 1.5;
+  }
+
+  /* ── Header ─────────────────────────────────────────────────────────── */
+  header {
+    background: rgba(2, 8, 23, 0.95);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo-icon {
+    width: 30px; height: 30px;
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; border-radius: 8px;
+  }
+  .logo-text { font-weight: 700; font-size: 14px; color: #fff; letter-spacing: 0.5px; }
+  .logo-sub  { font-size: 9px; color: var(--primary); letter-spacing: 1.5px; font-weight: 600; text-transform: uppercase; }
+
+  .toggle-wrap { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--muted); font-weight: 500; }
+  .toggle {
+    position: relative; width: 38px; height: 21px;
+    background: var(--secondary); border-radius: 12px; cursor: pointer;
+    transition: all 0.3s; border: 1px solid var(--border);
+  }
+  .toggle.on { background: var(--primary); border-color: var(--primary); }
+  .toggle-knob {
+    position: absolute; top: 2px; left: 2px;
+    width: 15px; height: 15px; background: #fff;
+    border-radius: 50%; transition: transform 0.3s;
+  }
+  .toggle.on .toggle-knob { transform: translateX(17px); }
+
+  /* ── Icon-only Tab Bar ───────────────────────────────────────────────── */
+  .tab-bar {
+    display: flex;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 6px 8px;
+    gap: 4px;
+  }
+
+  .tab-btn {
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 44px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    outline: none;
+    transition: background 0.18s;
+    /* Overflow visible so tooltip can escape the button bounds */
+    overflow: visible;
+  }
+
+  .tab-btn:hover {
+    background: rgba(59, 130, 246, 0.08);
+  }
+
+  .tab-btn.active {
+    background: rgba(59, 130, 246, 0.13);
+  }
+
+  /* The SVG icon */
+  .tab-btn svg {
+    width: 22px;
+    height: 22px;
+    stroke: var(--muted);
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+    transition: stroke 0.18s;
+    flex-shrink: 0;
+    display: block;
+  }
+
+  .tab-btn.active svg { stroke: var(--primary); }
+  .tab-btn:hover:not(.active) svg { stroke: #94a3b8; }
+
+  /* Active underline pip */
+  .tab-btn::before {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 16px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--primary);
+    opacity: 0;
+    transition: opacity 0.18s;
+  }
+  .tab-btn.active::before { opacity: 1; }
+
+  /* Tooltip — appears above the tab bar */
+  .tab-btn .tip {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%) translateY(6px);
+    background: #1e293b;
+    color: #e2e8f0;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    padding: 5px 10px;
+    border-radius: 6px;
+    border: 1px solid #334155;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s, transform 0.15s;
+    z-index: 999;
+  }
+
+  /* Downward arrow on tooltip */
+  .tab-btn .tip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: #334155;
+  }
+
+  .tab-btn:hover .tip {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* ── Tab panels ──────────────────────────────────────────────────────── */
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── Feed panel ──────────────────────────────────────────────────────── */
+  .stats-row {
+    display: flex; background: var(--card);
+    border-bottom: 1px solid var(--border);
+  }
+  .stat-cell {
+    flex: 1; text-align: center; padding: 12px 4px;
+    border-right: 1px solid var(--border);
+  }
+  .stat-cell:last-child { border-right: none; }
+  .stat-val  { font-size: 20px; font-weight: 700; font-family: monospace; color: var(--primary); }
+  .stat-lbl  { font-size: 9px; letter-spacing: 1px; color: var(--muted); text-transform: uppercase; margin-top: 2px; font-weight: 600; }
+
+  .section-title {
+    font-size: 10px; letter-spacing: 1px; color: var(--muted);
+    text-transform: uppercase; padding: 12px 16px 8px; font-weight: 700;
+  }
+
+  .feed { max-height: 210px; overflow-y: auto; }
+  .feed::-webkit-scrollbar { width: 4px; }
+  .feed::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+  .feed-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 16px; border-bottom: 1px solid rgba(255,255,255,0.03);
+    transition: background 0.15s; cursor: default;
+  }
+  .feed-item:hover { background: rgba(59, 130, 246, 0.04); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .dot-threat     { background: var(--threat);     box-shadow: 0 0 6px var(--threat); }
+  .dot-suspicious { background: var(--suspicious); box-shadow: 0 0 6px var(--suspicious); }
+  .dot-safe       { background: var(--safe);       box-shadow: 0 0 6px var(--safe); }
+  .dot-error      { background: var(--muted); }
+  .feed-content { flex: 1; min-width: 0; }
+  .feed-text  { font-size: 12px; color: #cbd5e1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+  .feed-time  { font-size: 10px; color: var(--muted); margin-top: 1px; }
+  .feed-score { font-family: monospace; font-size: 12px; color: var(--primary); font-weight: 700; flex-shrink: 0; }
+
+  /* ── Scan panel ──────────────────────────────────────────────────────── */
+  .scan-panel { padding: 14px 16px; }
+  .scan-panel select {
+    width: 100%; padding: 8px 12px;
+    background: var(--secondary); border: 1px solid var(--border);
+    color: var(--foreground); border-radius: 8px;
+    font-size: 12px; margin-bottom: 10px; outline: none; cursor: pointer;
+  }
+  .scan-panel textarea {
+    width: 100%; height: 88px; resize: vertical;
+    background: var(--secondary); border: 1px solid var(--border);
+    color: var(--foreground); border-radius: 8px;
+    padding: 10px 12px; font-size: 12px; font-family: inherit;
+    margin-bottom: 10px; outline: none; transition: border-color 0.2s;
+  }
+  .scan-panel textarea:focus { border-color: var(--primary); }
+  .scan-panel textarea::placeholder { color: var(--muted); }
+  .btn-scan {
+    width: 100%; padding: 10px; background: var(--primary); border: none;
+    color: #fff; font-size: 12px; font-weight: 700; border-radius: 8px;
+    cursor: pointer; transition: background 0.2s;
+  }
+  .btn-scan:hover { background: #2563eb; }
+  .btn-scan:disabled { background: var(--muted); cursor: not-allowed; }
+  .scan-result {
+    margin-top: 12px; padding: 12px;
+    background: var(--secondary); border-radius: 8px; border: 1px solid var(--border);
+  }
+  .result-verdict { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+  .result-verdict.threat     { color: var(--threat); }
+  .result-verdict.suspicious { color: var(--suspicious); }
+  .result-verdict.safe       { color: var(--safe); }
+  .result-reason { font-size: 11px; color: #94a3b8; line-height: 1.5; }
+
+  /* ── Settings panel ──────────────────────────────────────────────────── */
+  .settings-panel { padding: 14px 16px; }
+  .setting-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .setting-row:last-child { border-bottom: none; }
+  .setting-label { font-size: 12px; color: #cbd5e1; font-weight: 500; }
+  .setting-sub   { font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .mini-toggle {
+    position: relative; width: 34px; height: 18px;
+    background: var(--secondary); border-radius: 10px; cursor: pointer;
+    border: 1px solid var(--border); transition: all 0.25s; flex-shrink: 0;
+  }
+  .mini-toggle.on { background: var(--primary); border-color: var(--primary); }
+  .mini-toggle-knob {
+    position: absolute; top: 1.5px; left: 1.5px;
+    width: 13px; height: 13px; background: #fff;
+    border-radius: 50%; transition: transform 0.25s;
+  }
+  .mini-toggle.on .mini-toggle-knob { transform: translateX(16px); }
+
+  /* ── Shared ──────────────────────────────────────────────────────────── */
+  .empty { padding: 36px 16px; text-align: center; color: var(--muted); font-size: 12px; }
+
+  footer {
+    padding: 12px 16px; border-top: 1px solid var(--border);
+    display: flex; gap: 8px; background: var(--card);
+  }
+  .btn {
+    flex: 1; padding: 8px; background: var(--secondary);
+    border: 1px solid var(--border); color: #94a3b8;
+    font-size: 11px; cursor: pointer; border-radius: 6px;
+    transition: all 0.2s; font-weight: 600;
+  }
+  .btn:hover { border-color: var(--primary); color: var(--primary); }
+  .btn-primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+  .btn-primary:hover { background: #2563eb; color: #fff; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">🛡</div>
+    <div>
+      <div class="logo-text">PHISHGUARD</div>
+      <div class="logo-sub" id="header-sub">AI SHIELD ACTIVE</div>
+    </div>
+  </div>
+  <div class="toggle-wrap">
+    <span id="toggle-label">ON</span>
+    <div class="toggle on" id="toggle"><div class="toggle-knob"></div></div>
+  </div>
+</header>
+
+<!-- Icon-only Tab Bar -->
+<nav class="tab-bar" role="tablist">
+
+  <button class="tab-btn active" data-tab="feed" role="tab" aria-label="Threat Feed">
+    <!-- Activity / pulse waveform -->
+    <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    <span class="tip">Threat Feed</span>
+  </button>
+
+  <button class="tab-btn" data-tab="scan" role="tab" aria-label="Quick Scan">
+    <!-- Magnifying glass -->
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <span class="tip">Quick Scan</span>
+  </button>
+
+  <button class="tab-btn" data-tab="settings" role="tab" aria-label="Settings">
+    <!-- Sliders / controls -->
+    <svg viewBox="0 0 24 24">
+      <line x1="4"  y1="21" x2="4"  y2="14"/>
+      <line x1="4"  y1="10" x2="4"  y2="3"/>
+      <line x1="12" y1="21" x2="12" y2="12"/>
+      <line x1="12" y1="8"  x2="12" y2="3"/>
+      <line x1="20" y1="21" x2="20" y2="16"/>
+      <line x1="20" y1="12" x2="20" y2="3"/>
+      <line x1="1"  y1="14" x2="7"  y2="14"/>
+      <line x1="9"  y1="8"  x2="15" y2="8"/>
+      <line x1="17" y1="16" x2="23" y2="16"/>
+    </svg>
+    <span class="tip">Settings</span>
+  </button>
+
+</nav>
+
+<!-- Feed Panel -->
+<div class="tab-panel active" id="panel-feed">
+  <div class="stats-row">
+    <div class="stat-cell">
+      <div class="stat-val" id="stat-total">0</div>
+      <div class="stat-lbl">Scanned</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-val" id="stat-threats" style="color:var(--threat)">0</div>
+      <div class="stat-lbl">Threats</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-val" id="stat-suspicious" style="color:var(--suspicious)">0</div>
+      <div class="stat-lbl">Alerts</div>
+    </div>
+  </div>
+  <div class="section-title">Threat Intelligence Feed</div>
+  <div class="feed" id="feed">
+    <div class="empty">No active threats detected in this session.</div>
+  </div>
+</div>
+
+<!-- Scan Panel -->
+<div class="tab-panel" id="panel-scan">
+  <div class="scan-panel">
+    <select id="scan-type">
+      <option value="email">Email</option>
+      <option value="url">URL</option>
+      <option value="attachment_base64">Attachment (base64)</option>
+    </select>
+    <textarea id="scan-input" placeholder="Paste email body, URL, or base64 attachment…"></textarea>
+    <button class="btn-scan" id="scan-btn">Analyse</button>
+    <div id="scan-result" style="display:none" class="scan-result">
+      <div class="result-verdict" id="result-verdict"></div>
+      <div class="result-reason"  id="result-reason"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Settings Panel -->
+<div class="tab-panel" id="panel-settings">
+  <div class="settings-panel">
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">Gmail overlay</div>
+        <div class="setting-sub">Inject risk ribbon into emails</div>
+      </div>
+      <div class="mini-toggle on" data-setting="overlay" id="setting-overlay">
+        <div class="mini-toggle-knob"></div>
+      </div>
+    </div>
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">Auto-scan on open</div>
+        <div class="setting-sub">Scan when an email is opened</div>
+      </div>
+      <div class="mini-toggle on" data-setting="autoscan" id="setting-autoscan">
+        <div class="mini-toggle-knob"></div>
+      </div>
+    </div>
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">Desktop notifications</div>
+        <div class="setting-sub">Alert on threat detection</div>
+      </div>
+      <div class="mini-toggle" data-setting="notifs" id="setting-notifs">
+        <div class="mini-toggle-knob"></div>
+      </div>
+    </div>
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">Link tooltips</div>
+        <div class="setting-sub">Show real destination on hover</div>
+      </div>
+      <div class="mini-toggle on" data-setting="tooltips" id="setting-tooltips">
+        <div class="mini-toggle-knob"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer>
+  <button class="btn btn-primary" id="open-dashboard">Dashboard ↗</button>
+  <button class="btn" id="clear-badge">Reset Badge</button>
+</footer>
+
+<script src="popup.js"></script>
+</body>
+</html>
