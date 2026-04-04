@@ -87,9 +87,4 @@ Frontend: Vanilla HTML/CSS/JS + Chart.js
 Extension: Chrome Manifest V3
 
 
-How to Run with Docker
-Bashdocker compose up --build
-For sandbox (V2):
-Bashdocker compose --profile sandbox up
-
 Made with ❤️ for better phishing protection.
